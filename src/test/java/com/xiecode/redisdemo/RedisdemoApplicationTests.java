@@ -1,5 +1,7 @@
 package com.xiecode.redisdemo;
 
+import com.xiecode.redisdemo.pojo.User;
+import com.xiecode.redisdemo.util.SerializeUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Transaction;
 import redis.clients.jedis.params.SetParams;
 
 import java.util.HashMap;
@@ -285,6 +288,65 @@ class RedisdemoApplicationTests {
         System.out.println("set = " + set);
     }
 
+
+    /**
+    * @Description: 查询所有key
+    * @param: []
+    * @return: void
+    * @Author: Xiewc
+    * @Date: 2022/5/20
+    */
+    @Test
+    public void selectAllKey() {
+        //查询当前数据库所有的key的数量
+        Long size = jedis.dbSize();
+        System.out.println("size = " + size);
+        //查询当前数据库所有的key
+        Set<String> set = jedis.keys("*");
+        for (Object o : set.toArray()) {
+            System.out.println("key = " + o);
+        }
+    }
+
+    /**
+    * @Description: 事务
+    * @param: []
+    * @return: void
+    * @Author: Xiewc
+    * @Date: 2022/5/20
+    */
+    @Test
+    public void testMulti() {
+        //开启事务
+        Transaction tx = jedis.multi();
+        tx.set("tx11", "1001");
+
+        //提交事务
+        System.out.println(tx.exec());
+
+        //回滚事务
+        //System.out.println(tx.discard());
+    }
+
+    @Test
+    public void testByte() {
+        User user = new User();
+        user.setId(1001);
+        user.setName("谢炜程");
+        user.setPassword("123456");
+        //序列化为byte数组
+        byte[] useKey = SerializeUtil.serialize("user:" + user.getId());
+        byte[] userValue = SerializeUtil.serialize(user);
+
+        //存入redis
+        jedis.set(useKey, userValue);
+        //取出数据
+        byte[] bytes = jedis.get(useKey);
+        //反序列化
+        User user1 = (User) SerializeUtil.unserialize(bytes);
+        System.out.println(user1);
+
+    }
 
     
     //释放资源
