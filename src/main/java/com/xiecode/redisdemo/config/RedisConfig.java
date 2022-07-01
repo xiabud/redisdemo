@@ -18,8 +18,8 @@ public class RedisConfig {
     private Integer port;
 
     //服务器密码
-    //@Value("${spring.redis.password}")
-    //private String password;
+    @Value("${spring.redis.password}")
+    private String password;
 
     //连接超时时间
     @Value("${spring.redis.timeout}")
